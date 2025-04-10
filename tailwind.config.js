@@ -14,9 +14,9 @@ module.exports = {
       },
       colors: {
         primary: {
-          100: "rgba(0, 97, 255, 0.04)", // ✅ transparent blue
-          200: "rgba(0, 97, 255, 0.1)",
-          300: "rgba(0, 97, 255, 0.16)",
+          100: "#0061FF", // ✅ transparent blue
+          200: "#0061FF1A",
+          300: "#0061FF0A",
         },
         accent: {
           100: "#FBFBFD",
