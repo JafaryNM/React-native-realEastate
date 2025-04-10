@@ -21,27 +21,43 @@ export const account = new Account(client);
 export async function login() {
   try {
     const redirectUri = linking.createURL("/");
-    const response = await account.createOAuth2Token(
+
+    const authUrl = await account.createOAuth2Session(
       OAuthProvider.Google,
+      redirectUri,
       redirectUri
     );
-    if (!response) {
-      throw new Error("Failed to login");
+
+    if (!authUrl) {
+      throw new Error("Failed to create OAuth2 session");
     }
+
     const browserResult = await openAuthSessionAsync(
-      response.toString(),
+      authUrl.toString(),
       redirectUri
     );
-    if (browserResult.type !== "success") throw new Error("Failed to login");
+
+    if (browserResult.type !== "success" || !browserResult.url) {
+      throw new Error("Authentication failed");
+    }
+
     const url = new URL(browserResult.url);
-    const secret = url.searchParams.get("secret")?.toString();
-    const userId = url.searchParams.get("userId")?.toString();
-    if (!secret || !userId) throw new Error("Failed to login");
+    const secret = url.searchParams.get("secret");
+    const userId = url.searchParams.get("userId");
+
+    if (!secret || !userId) {
+      throw new Error("Failed to retrieve authentication tokens");
+    }
+
     const session = await account.createSession(userId, secret);
-    if (!session) throw new Error("Failed to create a sessions");
+
+    if (!session) {
+      throw new Error("Failed to create a session");
+    }
+
     return true;
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     return false;
   }
 }
@@ -51,7 +67,8 @@ export async function logout() {
     await account.deleteSession("current");
     return true;
   } catch (error) {
-    console.error(error);
+    console.error("Logout error:", error);
+    return false;
   }
 }
 
@@ -66,7 +83,7 @@ export async function getLoginUser() {
       };
     }
   } catch (error) {
-    console.error(error);
+    console.error("Get login user error:", error);
     return null;
   }
 }
